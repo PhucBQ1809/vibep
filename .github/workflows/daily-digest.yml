@@ -1,0 +1,59 @@
+name: Daily digest
+
+on:
+  schedule:
+    # 01:00 UTC = 08:00 giờ Việt Nam
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Topic id (để trống = tất cả topic đang bật)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Chỉ in ra log, không gửi Telegram"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # commit lại data/sent.json để không gửi trùng bài
+
+concurrency:
+  group: daily-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Build and send digest
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Thêm secret cho topic gửi sang chat khác, ví dụ:
+          # TELEGRAM_CHAT_ID_IT: ${{ secrets.TELEGRAM_CHAT_ID_IT }}
+          INPUT_TOPIC: ${{ inputs.topic }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          args=()
+          if [ -n "$INPUT_TOPIC" ]; then args+=(--topic "$INPUT_TOPIC"); fi
+          if [ "$INPUT_DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          python -m digestbot "${args[@]}"
+
+      - name: Save sent history
+        if: always()
+        run: |
+          git config user.name "digest-bot"
+          git config user.email "digest-bot@users.noreply.github.com"
+          git add data/sent.json
+          git diff --cached --quiet || git commit -m "chore: update sent history [skip ci]"
+          git push

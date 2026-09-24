@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Sample</title>
+    <item>
+      <title>Case study: niche site reaches $5k/month with affiliate</title>
+      <link>https://example.com/case-study?utm_source=rss</link>
+      <pubDate>Thu, 24 Sep 2026 06:00:00 GMT</pubDate>
+      <description>&lt;p&gt;How we grew a &lt;b&gt;niche site&lt;/b&gt; with SEO.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Best online casino bonuses</title>
+      <link>https://example.com/casino</link>
+      <pubDate>Thu, 24 Sep 2026 05:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Old post about blogging</title>
+      <link>https://example.com/old</link>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Kiếm tiền với TikTok Shop cho người mới</title>
+      <link>https://example.com/tiktok-shop</link>
+      <pubDate>Thu, 24 Sep 2026 02:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

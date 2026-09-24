@@ -1,0 +1,113 @@
+# Mỗi topic = 1 bản tin gửi vào Telegram.
+# Thêm chủ đề mới: copy 1 block topic, đổi id/title/sources, đặt enabled: true.
+#
+# Các trường của topic:
+#   title            Tiêu đề bản tin
+#   emoji            Emoji đầu bản tin
+#   enabled          false = bỏ qua khi chạy tất cả topic
+#   chat_id_env      Tên biến môi trường chứa chat id (mặc định TELEGRAM_CHAT_ID).
+#                    Dùng biến khác nếu muốn gửi topic này sang group/kênh khác.
+#   max_items        Số bài tối đa mỗi bản tin
+#   max_age_hours    Bỏ bài cũ hơn N giờ
+#   max_per_source   Tối đa N bài từ cùng 1 nguồn (tránh 1 nguồn chiếm hết)
+#   include_keywords Nếu có: bài phải chứa ít nhất 1 từ khoá (tiêu đề/tóm tắt/tag)
+#   exclude_keywords Bài chứa 1 trong các từ này sẽ bị loại
+#   boost_keywords   Mỗi từ khoá khớp sẽ đẩy bài lên cao hơn
+#   sources          Danh sách nguồn: name, url, type (rss), weight (độ ưu tiên, mặc định 1.0)
+#
+# Mẹo nguồn RSS:
+#   Google News:  https://news.google.com/rss/search?q=<từ+khoá>+when:1d&hl=vi&gl=VN&ceid=VN:vi
+#   Reddit:       https://www.reddit.com/r/<sub>/top/.rss?t=day
+
+settings:
+  request_timeout: 20
+
+topics:
+  mmo:
+    title: "Bản tin Kiếm tiền Online (MMO)"
+    emoji: "💰"
+    enabled: true
+    max_items: 12
+    max_age_hours: 36
+    max_per_source: 3
+    exclude_keywords:
+      - "casino"
+      - "betting"
+      - "cá độ"
+      - "lừa đảo tuyển cộng tác viên"
+      - "giveaway"
+    boost_keywords:
+      - "case study"
+      - "income report"
+      - "affiliate"
+      - "seo"
+      - "niche"
+      - "passive income"
+      - "dropshipping"
+      - "tiktok shop"
+      - "youtube"
+      - "ai"
+      - "kiếm tiền"
+      - "thu nhập"
+    sources:
+      # --- Tiếng Việt ---
+      - name: "Google News: kiếm tiền online"
+        url: "https://news.google.com/rss/search?q=%22ki%E1%BA%BFm+ti%E1%BB%81n+online%22+when:1d&hl=vi&gl=VN&ceid=VN:vi"
+        weight: 1.1
+      - name: "Google News: tiếp thị liên kết"
+        url: "https://news.google.com/rss/search?q=%22ti%E1%BA%BFp+th%E1%BB%8B+li%C3%AAn+k%E1%BA%BFt%22+OR+affiliate+when:1d&hl=vi&gl=VN&ceid=VN:vi"
+      # --- Tiếng Anh: tin tức ---
+      - name: "Google News: make money online"
+        url: "https://news.google.com/rss/search?q=%22make+money+online%22+OR+%22side+hustle%22+when:1d&hl=en-US&gl=US&ceid=US:en"
+        weight: 0.9
+      # --- Blog chuyên sâu ---
+      - name: "Niche Pursuits"
+        url: "https://www.nichepursuits.com/feed/"
+        weight: 1.3
+      - name: "Smart Passive Income"
+        url: "https://www.smartpassiveincome.com/feed/"
+        weight: 1.2
+      - name: "Authority Hacker"
+        url: "https://www.authorityhacker.com/feed/"
+        weight: 1.2
+      - name: "Ahrefs Blog"
+        url: "https://ahrefs.com/blog/feed/"
+        weight: 1.1
+      # --- Cộng đồng (top bài trong ngày) ---
+      - name: "r/juststart"
+        url: "https://www.reddit.com/r/juststart/top/.rss?t=day"
+        weight: 1.2
+      - name: "r/Affiliatemarketing"
+        url: "https://www.reddit.com/r/Affiliatemarketing/top/.rss?t=day"
+      - name: "r/passive_income"
+        url: "https://www.reddit.com/r/passive_income/top/.rss?t=day"
+      - name: "r/SideProject"
+        url: "https://www.reddit.com/r/SideProject/top/.rss?t=day"
+        weight: 0.9
+      - name: "r/Entrepreneur"
+        url: "https://www.reddit.com/r/Entrepreneur/top/.rss?t=day"
+        weight: 0.9
+
+  # Ví dụ chủ đề thứ 2 — đổi enabled: true để bật.
+  it:
+    title: "Bản tin Công nghệ / IT"
+    emoji: "💻"
+    enabled: false
+    # chat_id_env: "TELEGRAM_CHAT_ID_IT"   # bỏ comment để gửi sang group riêng
+    max_items: 12
+    max_age_hours: 30
+    max_per_source: 3
+    boost_keywords: ["ai", "llm", "python", "security", "open source", "release"]
+    sources:
+      - name: "Hacker News (best)"
+        url: "https://hnrss.org/best"
+        weight: 1.3
+      - name: "Lobsters"
+        url: "https://lobste.rs/rss"
+      - name: "VnExpress Số hoá"
+        url: "https://vnexpress.net/rss/so-hoa.rss"
+      - name: "dev.to"
+        url: "https://dev.to/feed"
+        weight: 0.8
+      - name: "r/programming"
+        url: "https://www.reddit.com/r/programming/top/.rss?t=day"
