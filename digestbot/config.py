@@ -14,6 +14,9 @@ class SourceConfig:
     url: str
     type: str = "rss"
     weight: float = 1.0
+    # reddit only: skip posts with fewer upvotes / comments than this
+    min_score: int = 0
+    min_comments: int = 0
 
 
 @dataclass

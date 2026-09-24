@@ -70,8 +70,46 @@ def fetch_rss(source: SourceConfig, config: AppConfig) -> list[Article]:
     return parse_feed(resp.content, source)
 
 
+def parse_reddit(data: dict, source: SourceConfig) -> list[Article]:
+    articles = []
+    for child in data.get("data", {}).get("children", []):
+        post = child.get("data", {})
+        if post.get("stickied") or post.get("over_18"):
+            continue
+        if post.get("score", 0) < source.min_score:
+            continue
+        if post.get("num_comments", 0) < source.min_comments:
+            continue
+        flair = post.get("link_flair_text") or ""
+        articles.append(
+            Article(
+                title=clean_text(post.get("title", ""), limit=200),
+                # Link to the thread: the discussion is where the learning is.
+                url="https://www.reddit.com" + post.get("permalink", ""),
+                source=source.name,
+                published=datetime.fromtimestamp(post.get("created_utc", 0), tz=timezone.utc),
+                summary=clean_text(post.get("selftext", "")),
+                tags=[flair] if flair else [],
+                meta=f"⬆️ {post.get('score', 0)} · 💬 {post.get('num_comments', 0)}",
+            )
+        )
+    return articles
+
+
+def fetch_reddit(source: SourceConfig, config: AppConfig) -> list[Article]:
+    """source.url is a listing JSON URL, e.g. https://www.reddit.com/r/juststart/top.json?t=week"""
+    resp = requests.get(
+        source.url,
+        headers={"User-Agent": config.user_agent},
+        timeout=config.request_timeout,
+    )
+    resp.raise_for_status()
+    return parse_reddit(resp.json(), source)
+
+
 FETCHERS: dict[str, Callable[[SourceConfig, AppConfig], list[Article]]] = {
     "rss": fetch_rss,
+    "reddit": fetch_reddit,
 }
 
 

@@ -107,3 +107,28 @@ def test_repo_config_loads():
     config = load_config(ROOT / "config/topics.yaml")
     assert config.topic("mmo").enabled
     assert all(s.url.startswith("https://") for t in config.topics for s in t.sources)
+
+
+def test_parse_reddit_filters_and_links_to_thread():
+    from digestbot.sources import parse_reddit
+
+    src = SourceConfig(name="r/juststart", url="x", type="reddit", min_score=20)
+    post = lambda **kw: {"data": {"title": "T", "permalink": "/r/juststart/comments/1/t/",
+                                  "created_utc": 1790000000, "score": 50, "num_comments": 9,
+                                  "selftext": "How I got to $1k", **kw}}
+    data = {"data": {"children": [post(), post(score=3), post(stickied=True)]}}
+    articles = parse_reddit(data, src)
+    assert len(articles) == 1
+    assert articles[0].url == "https://www.reddit.com/r/juststart/comments/1/t/"
+    assert articles[0].meta == "⬆️ 50 · 💬 9"
+    assert "⬆️ 50" in format_digest(make_topic(), articles, now=NOW)[0]
+
+
+def test_news_is_excluded_by_repo_config():
+    topic = load_config(ROOT / "config/topics.yaml").topic("mmo")
+    news = Article(title="Lãi suất ngân hàng tăng mạnh", url="https://x.com/n", source="S",
+                   published=NOW)
+    guide = Article(title="Hướng dẫn làm affiliate cho người mới", url="https://x.com/g",
+                    source="S", published=NOW)
+    picked = select_articles([news, guide], topic, set(), {}, now=NOW)
+    assert [a.url for a in picked] == ["https://x.com/g"]

@@ -13,79 +13,123 @@
 #   include_keywords Nếu có: bài phải chứa ít nhất 1 từ khoá (tiêu đề/tóm tắt/tag)
 #   exclude_keywords Bài chứa 1 trong các từ này sẽ bị loại
 #   boost_keywords   Mỗi từ khoá khớp sẽ đẩy bài lên cao hơn
-#   sources          Danh sách nguồn: name, url, type (rss), weight (độ ưu tiên, mặc định 1.0)
+#   sources          Danh sách nguồn:
+#                      name, url, weight (độ ưu tiên, mặc định 1.0)
+#                      type: rss (mặc định) hoặc reddit
+#                      min_score / min_comments: chỉ với reddit, lọc bài ít upvote/bình luận
 #
-# Mẹo nguồn RSS:
-#   Google News:  https://news.google.com/rss/search?q=<từ+khoá>+when:1d&hl=vi&gl=VN&ceid=VN:vi
-#   Reddit:       https://www.reddit.com/r/<sub>/top/.rss?t=day
+# Mẹo tìm nguồn:
+#   Blog WordPress:   https://<domain>/feed/
+#   Kênh YouTube:     https://www.youtube.com/feeds/videos.xml?channel_id=<ID kênh>
+#   Reddit (type: reddit): https://www.reddit.com/r/<sub>/top.json?t=week&limit=50
+#   Kiểm tra nguồn:   python -m digestbot --check
 
 settings:
   request_timeout: 20
 
 topics:
   mmo:
-    title: "Bản tin Kiếm tiền Online (MMO)"
+    title: "Học kiếm tiền Online (MMO)"
     emoji: "💰"
     enabled: true
-    max_items: 12
-    max_age_hours: 36
+    max_items: 10
+    # Blog hướng dẫn không ra bài mỗi ngày nên lấy bài trong 7 ngày;
+    # bài đã gửi sẽ không bị gửi lại.
+    max_age_hours: 168
     max_per_source: 3
+    # Loại tin tức kinh tế / tài chính vĩ mô, chỉ giữ nội dung học làm.
     exclude_keywords:
+      - "chứng khoán"
+      - "cổ phiếu"
+      - "lãi suất"
+      - "tỷ giá"
+      - "giá vàng"
+      - "gdp"
+      - "lạm phát"
+      - "stock market"
+      - "interest rate"
+      - "inflation"
+      - "recession"
       - "casino"
       - "betting"
       - "cá độ"
-      - "lừa đảo tuyển cộng tác viên"
       - "giveaway"
+    # Ưu tiên bài dạng hướng dẫn, case study, chia sẻ thu nhập thực tế.
     boost_keywords:
+      - "hướng dẫn"
+      - "cách"
+      - "kinh nghiệm"
+      - "chia sẻ"
+      - "từ a đến z"
+      - "người mới"
       - "case study"
       - "income report"
+      - "how to"
+      - "how i"
+      - "step by step"
+      - "guide"
+      - "tutorial"
+      - "lessons"
+      - "strategy"
+      - "month"
       - "affiliate"
       - "seo"
       - "niche"
-      - "passive income"
-      - "dropshipping"
       - "tiktok shop"
       - "youtube"
-      - "ai"
-      - "kiếm tiền"
-      - "thu nhập"
     sources:
-      # --- Tiếng Việt ---
-      - name: "Google News: kiếm tiền online"
-        url: "https://news.google.com/rss/search?q=%22ki%E1%BA%BFm+ti%E1%BB%81n+online%22+when:1d&hl=vi&gl=VN&ceid=VN:vi"
-        weight: 1.1
-      - name: "Google News: tiếp thị liên kết"
-        url: "https://news.google.com/rss/search?q=%22ti%E1%BA%BFp+th%E1%BB%8B+li%C3%AAn+k%E1%BA%BFt%22+OR+affiliate+when:1d&hl=vi&gl=VN&ceid=VN:vi"
-      # --- Tiếng Anh: tin tức ---
-      - name: "Google News: make money online"
-        url: "https://news.google.com/rss/search?q=%22make+money+online%22+OR+%22side+hustle%22+when:1d&hl=en-US&gl=US&ceid=US:en"
-        weight: 0.9
-      # --- Blog chuyên sâu ---
+      # --- Blog tiếng Việt: chia sẻ kinh nghiệm MMO ---
+      - name: "Làm MMO"
+        url: "https://lammmo.com/feed/"
+        weight: 1.3
+      - name: "Tôi Thích Blog"
+        url: "https://toithichblog.com/feed/"
+        weight: 1.2
+      - name: "Nguyễn Hữu Lam Blog"
+        url: "https://blog.nguyenhuulam.com/feed/"
+        weight: 1.2
+
+      # --- Blog tiếng Anh: hướng dẫn, case study, income report ---
       - name: "Niche Pursuits"
         url: "https://www.nichepursuits.com/feed/"
         weight: 1.3
+      - name: "Side Hustle Nation"
+        url: "https://www.sidehustlenation.com/feed/"
+        weight: 1.2
       - name: "Smart Passive Income"
         url: "https://www.smartpassiveincome.com/feed/"
-        weight: 1.2
+        weight: 1.1
       - name: "Authority Hacker"
         url: "https://www.authorityhacker.com/feed/"
-        weight: 1.2
-      - name: "Ahrefs Blog"
-        url: "https://ahrefs.com/blog/feed/"
         weight: 1.1
-      # --- Cộng đồng (top bài trong ngày) ---
+      - name: "Diggity Marketing (SEO)"
+        url: "https://diggitymarketing.com/feed/"
+      - name: "Ryan Robinson (blogging)"
+        url: "https://www.ryrob.com/feed/"
+
+      # --- Reddit: bài được cộng đồng upvote nhiều nhất tuần ---
+      # Người làm thật chia sẻ con số, cách làm; link dẫn thẳng vào thread thảo luận.
       - name: "r/juststart"
-        url: "https://www.reddit.com/r/juststart/top/.rss?t=day"
-        weight: 1.2
+        type: reddit
+        url: "https://www.reddit.com/r/juststart/top.json?t=week&limit=50"
+        min_score: 20
+        weight: 1.3
       - name: "r/Affiliatemarketing"
-        url: "https://www.reddit.com/r/Affiliatemarketing/top/.rss?t=day"
-      - name: "r/passive_income"
-        url: "https://www.reddit.com/r/passive_income/top/.rss?t=day"
+        type: reddit
+        url: "https://www.reddit.com/r/Affiliatemarketing/top.json?t=week&limit=50"
+        min_score: 20
+      - name: "r/Blogging"
+        type: reddit
+        url: "https://www.reddit.com/r/Blogging/top.json?t=week&limit=50"
+        min_score: 20
+      - name: "r/dropship"
+        type: reddit
+        url: "https://www.reddit.com/r/dropship/top.json?t=week&limit=50"
+        min_score: 20
       - name: "r/SideProject"
-        url: "https://www.reddit.com/r/SideProject/top/.rss?t=day"
-        weight: 0.9
-      - name: "r/Entrepreneur"
-        url: "https://www.reddit.com/r/Entrepreneur/top/.rss?t=day"
+        type: reddit
+        url: "https://www.reddit.com/r/SideProject/top.json?t=week&limit=50"
+        min_score: 50
         weight: 0.9
 
   # Ví dụ chủ đề thứ 2 — đổi enabled: true để bật.
@@ -110,4 +154,6 @@ topics:
         url: "https://dev.to/feed"
         weight: 0.8
       - name: "r/programming"
-        url: "https://www.reddit.com/r/programming/top/.rss?t=day"
+        type: reddit
+        url: "https://www.reddit.com/r/programming/top.json?t=day&limit=50"
+        min_score: 100

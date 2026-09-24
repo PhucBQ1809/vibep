@@ -14,6 +14,10 @@ on:
         description: "Chỉ in ra log, không gửi Telegram"
         type: boolean
         default: false
+      check:
+        description: "Chỉ kiểm tra các nguồn có lấy được bài không (không gửi)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write # commit lại data/sent.json để không gửi trùng bài
@@ -43,8 +47,10 @@ jobs:
           # TELEGRAM_CHAT_ID_IT: ${{ secrets.TELEGRAM_CHAT_ID_IT }}
           INPUT_TOPIC: ${{ inputs.topic }}
           INPUT_DRY_RUN: ${{ inputs.dry_run }}
+          INPUT_CHECK: ${{ inputs.check }}
         run: |
           args=()
+          if [ "$INPUT_CHECK" = "true" ]; then args+=(--check); fi
           if [ -n "$INPUT_TOPIC" ]; then args+=(--topic "$INPUT_TOPIC"); fi
           if [ "$INPUT_DRY_RUN" = "true" ]; then args+=(--dry-run); fi
           python -m digestbot "${args[@]}"

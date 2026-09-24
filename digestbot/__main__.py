@@ -6,7 +6,7 @@ import logging
 import sys
 
 from .config import load_config
-from .pipeline import run_topic
+from .pipeline import check_sources, run_topic
 from .state import SentStore
 
 
@@ -21,6 +21,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--dry-run", action="store_true", help="Print instead of sending")
     parser.add_argument("--list", action="store_true", help="List topics and exit")
+    parser.add_argument(
+        "--check", action="store_true", help="Fetch every source and report if it works"
+    )
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -35,6 +38,9 @@ def main(argv: list[str] | None = None) -> int:
     topics = [config.topic(t) for t in args.topic] if args.topic else [
         t for t in config.topics if t.enabled
     ]
+
+    if args.check:
+        return check_sources(topics, config)
 
     store = SentStore(args.state)
     failed = []

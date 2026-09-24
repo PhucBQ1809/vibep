@@ -14,7 +14,10 @@ def _format_item(index: int, a: Article, show_summary: bool) -> str:
     lines = [f'<b>{index}. <a href="{escape(a.url, quote=True)}">{escape(a.title)}</a></b>']
     if show_summary and a.summary and a.summary.lower() != a.title.lower():
         lines.append(f"<i>{escape(a.summary)}</i>")
-    lines.append(f"🔗 {escape(a.source)}")
+    footer = f"🔗 {escape(a.source)}"
+    if a.meta:
+        footer += f" · {escape(a.meta)}"
+    lines.append(footer)
     return "\n".join(lines)
 
 

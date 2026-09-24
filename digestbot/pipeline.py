@@ -8,7 +8,7 @@ from .config import AppConfig, TopicConfig
 from .formatter import format_digest
 from .models import Article
 from .ranking import select_articles
-from .sources import fetch_source
+from .sources import FETCHERS, fetch_source
 from .state import SentStore
 from .telegram import send_messages
 
@@ -47,3 +47,20 @@ def run_topic(topic: TopicConfig, config: AppConfig, store: SentStore, dry_run: 
     send_messages(token, topic.chat_id, messages)
     store.mark_sent(topic.id, [a.uid for a in picked])
     return len(picked)
+
+
+def check_sources(topics: list[TopicConfig], config: AppConfig) -> int:
+    """Try every source once and print a status table. Returns 1 if any failed."""
+    broken = 0
+    for topic in topics:
+        print(f"\n== {topic.id} ==")
+        for source in topic.sources:
+            try:
+                articles = FETCHERS[source.type](source, config)
+                newest = max((a.published for a in articles if a.published), default=None)
+                when = f"mới nhất {newest:%Y-%m-%d}" if newest else "không rõ ngày"
+                print(f"  OK    {source.name:<32} {len(articles):>3} bài, {when}")
+            except Exception as exc:
+                broken += 1
+                print(f"  LỖI   {source.name:<32} {type(exc).__name__}: {exc}"[:200])
+    return 1 if broken else 0

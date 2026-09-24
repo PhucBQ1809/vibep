@@ -1,7 +1,10 @@
 # digestbot — Bản tin tổng hợp hằng ngày gửi Telegram
 
-Mỗi sáng bot đọc RSS từ nhiều nguồn (Google News, blog, Reddit...), lọc theo từ khoá, bỏ bài trùng/cũ,
+Mỗi sáng bot đọc bài từ các blog hướng dẫn và cộng đồng Reddit, lọc theo từ khoá, bỏ bài trùng/cũ,
 chấm điểm rồi gửi **top bài hay nhất** vào chat Telegram của bạn.
+
+Chủ đề MMO tập trung vào **nội dung để học làm** (hướng dẫn, case study, chia sẻ thu nhập thực tế),
+không lấy tin tức kinh tế: các từ như "lãi suất", "chứng khoán", "tỷ giá"... bị loại.
 
 Hiện có sẵn chủ đề **MMO (kiếm tiền online)**, và mẫu chủ đề **IT** (đang tắt). Thêm chủ đề mới chỉ cần sửa
 file `config/topics.yaml`, không phải sửa code.
@@ -30,7 +33,9 @@ RSS nguồn ──► fetch (song song) ──► lọc: tuổi bài, từ khoá
 2. **Settings → Actions → General → Workflow permissions**: chọn *Read and write permissions*
    (để bot commit lại `data/sent.json`, tránh gửi trùng bài).
 3. Workflow `.github/workflows/daily-digest.yml` chạy lúc **08:00 giờ VN** mỗi ngày.
-   Muốn chạy thử ngay: tab **Actions → Daily digest → Run workflow** (có tuỳ chọn `dry_run`).
+   Muốn chạy thử ngay: tab **Actions → Daily digest → Run workflow**. Có 2 tuỳ chọn:
+   - `check`: kiểm tra từng nguồn có lấy được bài không (xem kết quả trong log). Nên chạy lần đầu.
+   - `dry_run`: in bản tin ra log, không gửi Telegram.
 
 Đổi giờ gửi: sửa dòng `cron` (giờ UTC = giờ VN − 7).
 
@@ -44,6 +49,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 python -m digestbot --list                  # xem các topic
+python -m digestbot --check                 # kiểm tra từng nguồn còn hoạt động không
 python -m digestbot --topic mmo --dry-run   # in bản tin ra màn hình, không gửi
 
 export TELEGRAM_BOT_TOKEN=... TELEGRAM_CHAT_ID=...
@@ -58,9 +64,10 @@ Mở `config/topics.yaml`:
 - **Gửi topic sang group khác**: đặt `chat_id_env: "TELEGRAM_CHAT_ID_IT"`, tạo secret cùng tên và
   bỏ comment dòng tương ứng trong `daily-digest.yml`.
 - **Thêm nguồn**: thêm `- name: ... url: ...` vào `sources`. Nguồn nào quan trọng thì tăng `weight`.
-  - Google News theo từ khoá: `https://news.google.com/rss/search?q=<từ+khoá>+when:1d&hl=vi&gl=VN&ceid=VN:vi`
-  - Reddit: `https://www.reddit.com/r/<sub>/top/.rss?t=day`
   - Hầu hết blog WordPress: `https://<domain>/feed/`
+  - Kênh YouTube: `https://www.youtube.com/feeds/videos.xml?channel_id=<ID kênh>`
+  - Reddit: `type: reddit`, url `https://www.reddit.com/r/<sub>/top.json?t=week&limit=50`,
+    thêm `min_score: 20` để chỉ lấy bài được upvote nhiều.
 - **Lọc nội dung**: `exclude_keywords` (loại bỏ), `include_keywords` (bắt buộc có),
   `boost_keywords` (ưu tiên). So khớp theo nguyên từ, không phân biệt hoa thường, hỗ trợ tiếng Việt có dấu.
 - **Thêm chủ đề mới**: copy nguyên block `it:` thành id mới (vd `crypto:`), đổi title/sources.
@@ -86,4 +93,4 @@ Chạy test: `pip install pytest && pytest -q`
 
 - Tóm tắt bài bằng AI (Claude API) trước khi gửi, hoặc để AI chấm điểm độ "hay" của bài.
 - Nút bấm 👍/👎 trên Telegram để học sở thích và điều chỉnh `weight` nguồn.
-- Thêm loại nguồn: YouTube channel (có RSS sẵn), Twitter/X, Facebook group, Viblo...
+- Thêm loại nguồn: Twitter/X, Facebook group, Viblo...

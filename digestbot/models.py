@@ -30,6 +30,7 @@ class Article:
     summary: str = ""
     score: float = 0.0
     tags: list[str] = field(default_factory=list)
+    meta: str = ""  # extra info shown next to the source, e.g. upvotes
 
     @property
     def uid(self) -> str:
